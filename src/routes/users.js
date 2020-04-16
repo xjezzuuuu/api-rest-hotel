@@ -33,7 +33,7 @@ router.get('/:id', (req, res) => {
             if(row.length == 1){
                 res.json(row);
             } else {
-                res.json({'error': 'Error'});
+                res.json({'message': 'User not found!'});
             }
         } else {
             res.json({'error': err.sqlMessage});
