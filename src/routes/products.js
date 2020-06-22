@@ -8,7 +8,7 @@ const mysqlConnection = require('../database');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    sql = 'SELECT * FROM rooms WHERE deleted_at IS NULL';
+    sql = 'SELECT * FROM products WHERE deleted_at IS NULL';
     mysqlConnection.query(sql, (err, rows, fields) => {
         if(!err){
             res.json(rows);
@@ -19,7 +19,7 @@ router.get('/', (req, res) => {
 });
 
 router.get('/all', (req, res) => {
-    sql = 'SELECT * FROM rooms';
+    sql = 'SELECT * FROM products';
     mysqlConnection.query(sql, (err, rows, fields) => {
         if(!err){
             res.json(rows);
@@ -31,13 +31,13 @@ router.get('/all', (req, res) => {
 
 router.get('/:id', (req, res) => {
     const { id } = req.params;
-    sql = 'SELECT * FROM rooms WHERE id = ?';
+    sql = 'SELECT * FROM products WHERE id = ?';
     mysqlConnection.query(sql, [id], (err, row, fields) => {        
         if(!err){
             if(row.length == 1){
                 res.json(row);
             } else {
-                res.json({'message': 'Room not found!'});
+                res.json({'message': 'Product not found!'});
             }
         } else {
             res.json({'error': err.sqlMessage});
@@ -45,79 +45,68 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.get('/all/join', (req, res) => {
-    sql = 'SELECT rooms.id, rooms.name AS rooms_name, rooms.description, rooms.price, status.name AS status_name, status.description AS status_description FROM rooms INNER JOIN status ON rooms.status_id = status.id WHERE rooms.deleted_at IS NULL';
-    mysqlConnection.query(sql, (err, rows, fields) => {
-        if(!err){
-            res.json(rows);
-        } else {
-            res.json({'error': err.sqlMessage})
-        }
-    });
-});
-
 router.post('/', (req, res) => {
-    const { status_id, name, description, price } = req.body;
+    const { clients_id, name, description, price } = req.body;
     const currentDate = new Date(Date.now()).toString();
     
-    const sql = 'INSERT INTO room (status_id, name, description, price, created_at) VALUES (?, ?, ?, ?, ?)';
-    if(status_id != undefined && name != undefined && description != undefined && price != undefined){
-        mysqlConnection.query(sql, [status_id, name, description, price, currentDate], (err, row, fields) => {
+    const sql = 'INSERT INTO products (clients_id, name, description, price, created_at) VALUES (?, ?, ?, ?, ?)';
+    if(clients_id != undefined && name != undefined && description != undefined && price != undefined){
+        mysqlConnection.query(sql, [clients_id, name, description, price, currentDate], (err, row, fields) => {
             if(!err){
-                res.json({'message': 'Room added successfull!'});
+                res.json({'message': 'Product added successfull!'});
             } else {
                 res.json({'error': err.sqlMessage});
             }
         });
     } else {
-        res.json({'message': 'Room not added!'});
+        res.json({'message': 'Product not added!'});
     }
 });
 
 router.put('/:id', (req, res) => {
     const id = req.params.id;
-    const { status_id, name, description, price } = req.body;
+    const { clients_id, name, description, price } = req.body;
     const currentDate = new Date(Date.now());
 
-    const sql = 'UPDATE rooms SET status_id = ?, name = ?, description = ?, price = ?, updated_at = ? WHERE id = ?';
+    const sql = 'UPDATE products SET clients_id = ?, name = ?, description = ?, price = ?, updated_at = ? WHERE id = ?';
 
-    if(status_id != undefined && name != undefined && description != undefined && price != undefined){
-        mysqlConnection.query(sql, [status_id, name, description, price, currentDate, id], (err, row, fields) => {
+    if(clients_id != undefined && name != undefined && description != undefined && price != undefined){
+        mysqlConnection.query(sql, [clients_id, name, description, price, currentDate, id], (err, row, fields) => {
             if(!err){
                 if(row.changedRows == 1){
-                    res.json({'message': 'Room updated successfull!'});
+                    res.json({'message': 'Product updated successfull!'});
                 } else {
-                    res.json({'message': 'Room not found!'});
+                    res.json({'message': 'Product not found!'});
                 }
             } else {
                 res.json({'error': err.sqlMessage});
             }
         });
     } else {
-        res.json({'message': 'Room not updated!'});
+        res.json({'message': 'Product not updated!'});
     }
 });
 
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
     const currentDate = new Date(Date.now());
-    sql = 'SELECT * FROM rooms WHERE id = ?';
+    sql = 'SELECT * FROM products WHERE id = ?';
     mysqlConnection.query(sql, [id], (err, row, fields) => {
         if(!err){
             if(row.length == 1){
                 if(row[0].deleted_at == null){
-                    mysqlConnection.query('UPDATE rooms SET deleted_at = ? WHERE id = ?', [currentDate, id], (err, row, fields) => {                     
+                    mysqlConnection.query('UPDATE products SET deleted_at = ? WHERE id = ?', [currentDate, id], (err, row, fields) => {                     
                         if(!err){
-                            res.json({'message': 'Room deleted successfull!'});
+                            res.json({'message': 'Product deleted successfull!'});
                         } else {
                             res.json({'error-2': err.sqlMessage});
                         }
                     });
                 } else {
-                    res.json({'message': 'The room is already deleted!'});
+                    res.json({'message': 'The product is already deleted!'});
                 }
             } else {
-                res.json({'message': 'Room not found!'});
+                res.json({'message': 'Product not found!'});
             }
         } else {
             res.json({'error-1': err.sqlMessage});
